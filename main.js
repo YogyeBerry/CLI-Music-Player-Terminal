@@ -1,15 +1,13 @@
 const fs = require("fs");
 const path = require("path");
+const { spawn } = require("child_process");
 function showsongs() {
     const songsFolder = path.join(__dirname, "songs");
     const files = fs.readdirSync(songsFolder);
     const songs = [];
     for (let i = 0; i < files.length; i++) {
-        if (
-            files[i].endsWith(".mp3") ||
-            files[i].endsWith(".wav") ||
-            files[i].endsWith(".flac")
-        ) {
+        if (files[i].endsWith(".mp3") || files[i].endsWith(".wav") || files[i].endsWith(".flac"))
+            {
             const fullPath = path.join(songsFolder, files[i]);
             songs.push({
                 title: files[i],
@@ -23,6 +21,8 @@ function showsongs() {
 const songs = showsongs();
 let selectedIndex = 0;
 function render() {
+    console.clear();
+    process.stdout.write("\x1b[H");
     console.log("CLI Music Player");
     console.log("");
     for (let i = 0; i < songs.length; i++) {
@@ -61,5 +61,9 @@ process.stdin.on("data", function (key) {
             selectedIndex--;
             render();
         }
+    }
+    if (key === "\r") {
+        const selectedSong = songs[selectedIndex];
+        spawn("afplay", [selectedSong.path]);
     }
 });
