@@ -6,7 +6,12 @@ function showsongs() {
     const files = fs.readdirSync(songsFolder);
     const songs = [];
     for (let i = 0; i < files.length; i++) {
-        if (files[i].endsWith(".mp3") || files[i].endsWith(".wav") || files[i].endsWith(".flac")) {
+        if (
+            files[i].endsWith(".mp3") ||
+            files[i].endsWith(".wav") ||
+            files[i].endsWith(".flac") ||
+            files[i].endsWith(".m4a")
+        ) {
             const fullPath = path.join(songsFolder, files[i]);
             songs.push({
                 title: files[i],
@@ -35,6 +40,25 @@ function render() {
     }
     console.log("");
     console.log("Navigate (Arrow Keys) | Enter Play | Space Pause/Resume | Q Quit");
+}
+function playSong(index) {
+    const selectedSong = songs[index];
+    if (playerProcess) {
+        playerProcess.kill();
+    }
+    isPaused = false
+    playerProcess = spawn("afplay", [selectedSong.path]);
+    playerProcess.on("close", function () {
+        if (!isPaused) {
+            if (selectedIndex < songs.length - 1) {
+                selectedIndex++;
+                render();
+                playSong(selectedIndex);
+            } else {
+                playerProcess = null;
+            }
+        }
+    });
 }
 if (songs.length === 0) {
     console.log("No supported audio files found.");
@@ -66,12 +90,7 @@ process.stdin.on("data", function (key) {
         }
     }
     if (key === "\r") {
-        const selectedSong = songs[selectedIndex];
-        if (playerProcess) {
-            playerProcess.kill();
-        }
-        playerProcess = spawn("afplay", [selectedSong.path]);
-        isPaused = false;
+        playSong(selectedIndex);
     }
     if (key === " ") {
         if (playerProcess) {
