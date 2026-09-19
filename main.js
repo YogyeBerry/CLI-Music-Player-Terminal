@@ -39,14 +39,14 @@ function render() {
         }
     }
     console.log("");
-    console.log("Navigate (Arrow Keys) | Enter Play | Space Pause/Resume | Q Quit");
+    console.log("↑ ↓ Navigate | ← Previous | → Next | Enter Play | Space Pause/Resume | Q Quit");
 }
 function playSong(index) {
     const selectedSong = songs[index];
     if (playerProcess) {
         playerProcess.kill();
     }
-    isPaused = false
+    isPaused = false;
     playerProcess = spawn("afplay", [selectedSong.path]);
     playerProcess.on("close", function () {
         if (!isPaused) {
@@ -87,6 +87,20 @@ process.stdin.on("data", function (key) {
         if (selectedIndex > 0) {
             selectedIndex--;
             render();
+        }
+    }
+    if (key === "\u001b[D") {
+        if (selectedIndex > 0) {
+            selectedIndex--;
+            render();
+            playSong(selectedIndex);
+        }
+    }
+    if (key === "\u001b[C") {
+        if (selectedIndex < songs.length - 1) {
+            selectedIndex++;
+            render();
+            playSong(selectedIndex);
         }
     }
     if (key === "\r") {
